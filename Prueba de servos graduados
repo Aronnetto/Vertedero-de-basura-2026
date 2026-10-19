@@ -1,0 +1,36 @@
+#include <Servo.h>
+
+Servo servo1;
+
+int pinServo = 9;
+int angulo = 90;
+
+void setup() {
+  Serial.begin(9600);
+
+  servo1.attach(pinServo);
+  servo1.write(angulo);
+
+  Serial.println("Control de servo por grados");
+  Serial.println("Ingresa un angulo entre 0 y 180:");
+}
+
+void loop() {
+  if (Serial.available() > 0) {
+    angulo = Serial.parseInt();
+
+    if (angulo >= 0 && angulo <= 180) {
+      servo1.write(angulo);
+
+      Serial.print("Angulo del servo: ");
+      Serial.println(angulo);
+    } else {
+      Serial.println("Error: usa un valor entre 0 y 180");
+    }
+
+    // Limpiar caracteres restantes
+    while (Serial.available() > 0) {
+      Serial.read();
+    }
+  }
+}
