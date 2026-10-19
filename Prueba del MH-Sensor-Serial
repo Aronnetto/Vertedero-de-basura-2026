@@ -1,0 +1,21 @@
+const int pinOUT = 2;
+const int pinAnalogico = A0;
+
+void setup() {
+  Serial.begin(9600);
+  pinMode(pinOUT, INPUT);
+
+  Serial.println("Prueba del sensor MH");
+}
+
+void loop() {
+  int estado = digitalRead(pinOUT);
+
+  Serial.print("OUT digital: ");
+  Serial.print(estado);
+
+  Serial.print(" | Lectura analogica A0: ");
+  Serial.println(analogRead(pinAnalogico));
+
+  delay(300);
+}
