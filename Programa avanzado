@@ -10,7 +10,7 @@ Servo Brazo; //
 Servo Piston; // empuja la mierda 
 
 int sensorPin = 3; // Pin donde está conectado OUT del sensor pelota
-int valorSensorPelota = 0;
+int valorSensorPelota = 1;
 int Contador = 0;
 int programa = 1;
 int cantDePelotas = 3; //este numero lo cambiamos en el momentode la competicion 
@@ -24,7 +24,6 @@ float dt;
 
 unsigned long tiempoAnterior = 0;
 long distanciaCm = 0;
-bool tengoPelota=false;
 
 const int T1=10;  
 const int E1=11; 
@@ -44,7 +43,6 @@ void setup() {
   Piston.write(0);
   Serial.begin(9600);
   delay(2000);
-  tengoPelota=0;
   
 }
 
@@ -57,20 +55,19 @@ while (programa == 1) {
   
    medirDistancia();
 
-   if (valorSensorPelota == 0 && tengoPelota == 0 && distanciaCm <= 10) {
+   if (valorSensorPelota == 0 && distanciaCm <= 10) {
       
-      tengoPelota = 1;
       delay(1000);
       agarrar();
       delay(500);
       Contador ++;
-      tengoPelota = 0;
       
-       else if (valorSensorPelota == 0 && tengoPelota == 0) {
+       else if (valorSensorPelota == 0) {
         
          esquivar();
 
        }
+   }
     
    if (distanciaCm <=10 && Contador == cantDePelotas){
        
@@ -79,22 +76,25 @@ while (programa == 1) {
       delay(750);
       izquierda();
       delay(750); // hay que regularlo para que gire a un angulo de 90 grados
-       while (analogRead(A4) && analogRead(A5)>=xx) { //cierto valor que no tengo 
+       while (analogRead(A4) && analogRead(A5)<=1000) { //cierto valor que no tengo 
           avanzar();
        }
+      detener();
       delay(1000);
       avanzar();
       delay(1000);
       izquierda();
       delay(1500); //delay suficiente para queda a 180 grados de preferencia
+      detener();
       tirar();
       delay(1000);
+      avanzar();
+      delay(1000);
+      detener();
       programa = 0; //Queda seco 
     
     }
 
-
-  }
 
     dt = (millis() - tiempoAnterior) / 1000.0;
     tiempoAnterior = millis();
@@ -124,12 +124,12 @@ void esquivar() {
     adelante();
     delay(1000);
     izquierda();
-    delay(1000);
+    delay(750);
     adelante();
     delay(1000);
     izquierda();
     delay(750);
-     while (analogRead(A0)<=990) { //valor que debemos de chquear 
+     while (analogRead(A0)<=1000) { //valor que debemos de chquear 
       
       adelante();
 
@@ -138,17 +138,22 @@ void esquivar() {
     
 }
 void tirar(){
-
-
+    
+    Piston.write(180); //empuja el piston que tira la la bolsa
+    delay(2000);
 
 }
 void agarrar() {
    
-   
+   Mano.write(0); //cierra
+   delay(1000);
+   Brazo.write(180); //sube
+   delay(1000); 
+   mano.write(180); //se abre 
+   delay(1000);
+   Brazo.write(0); //vuelve
 
 }
-
-
 
 void medirDistancia() {
     long t;
