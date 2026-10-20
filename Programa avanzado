@@ -1,0 +1,195 @@
+#include <Servo.h>
+
+// 0 es cuando el MH-sensor-Serial detecta algo y 1 es cuando no 
+// En arduino false = 0 y true = 1 
+
+Servo Der; // 
+Servo Izq; // 
+Servo Mano; // Garra
+Servo Brazo; // 
+Servo Piston; // empuja la mierda 
+
+int sensorPin = 3; // Pin donde está conectado OUT del sensor pelota
+int valorSensorPelota = 0;
+int Contador = 0;
+int programa = 1;
+int cantDePelotas = 3; //este numero lo cambiamos en el momentode la competicion 
+
+float error;
+float errorant=0;
+float correccion=0;
+float integral=0;
+float diferencial=0;
+float dt;
+
+unsigned long tiempoAnterior = 0;
+long distanciaCm = 0;
+bool tengoPelota=false;
+
+const int T1=10;  
+const int E1=11; 
+
+void setup() {
+  
+  Der.attach();
+  Izq.attach();
+  Mano.attach();
+  Brazo.attach();
+  Piston.attach();
+  pinMode(sensorPin,INPUT);
+  pinMode(T1, OUTPUT);
+  pinMode(E1, INPUT);
+  Der.write(0);
+  Izq.write(0);
+  Piston.write(0);
+  Serial.begin(9600);
+  delay(2000);
+  tengoPelota=0;
+  
+}
+
+
+void loop() {
+
+while (programa == 1) {
+   
+   valorSensorPelota = digitalRead(sensorPin);
+  
+   medirDistancia();
+
+   if (valorSensorPelota == 0 && tengoPelota == 0 && distanciaCm <= 10) {
+      
+      tengoPelota = 1;
+      delay(1000);
+      agarrar();
+      delay(500);
+      Contador ++;
+      tengoPelota = 0;
+      
+       else if (valorSensorPelota == 0 && tengoPelota == 0) {
+        
+         esquivar();
+
+       }
+    
+   if (distanciaCm <=10 && Contador == cantDePelotas){
+       
+      delay(1000); 
+      adelante();
+      delay(750);
+      izquierda();
+      delay(750); // hay que regularlo para que gire a un angulo de 90 grados
+       while (analogRead(A4) && analogRead(A5)>=xx) { //cierto valor que no tengo 
+          avanzar();
+       }
+      delay(1000);
+      avanzar();
+      delay(1000);
+      izquierda();
+      delay(1500); //delay suficiente para queda a 180 grados de preferencia
+      tirar();
+      delay(1000);
+      programa = 0; //Queda seco 
+    
+    }
+
+
+  }
+
+    dt = (millis() - tiempoAnterior) / 1000.0;
+    tiempoAnterior = millis();
+
+    error = -3.0*analogRead(A7) - 2.0*analogRead(A6) - 1.5*analogRead(A5) - 1.0*analogRead(A4) + 1.0*analogRead(A3) + 1.5*analogRead(A2) + 2.0*analogRead(A1) + 3.0*analogRead(A0);
+
+    diferencial = (error - errorant) / dt;
+    integral = integral + error * dt;
+    integral = constrain(integral, -10000.0, 10000.0);
+    errorant = error;
+
+    correccion = (error / 7.0) + 0.18 * diferencial + 0.0003125 * integral;
+
+    seguir(40, correccion);
+
+
+}
+}
+
+void esquivar() {
+    
+    delay(1000);
+    atras();
+    delay(500);
+    derecha();
+    delay(750);
+    adelante();
+    delay(1000);
+    izquierda();
+    delay(1000);
+    adelante();
+    delay(1000);
+    izquierda();
+    delay(750);
+     while (analogRead(A0)<=990) { //valor que debemos de chquear 
+      
+      adelante();
+
+     }
+
+    
+}
+void tirar(){
+
+
+
+}
+void agarrar() {
+   
+   
+
+}
+
+
+
+void medirDistancia() {
+    long t;
+
+    digitalWrite(T1, HIGH);
+    delayMicroseconds(10);
+    digitalWrite(T1, LOW);
+
+    t = pulseIn(E1, HIGH, 30000);
+
+    if (t > 0) {
+        distanciaCm = t / 59;
+    }
+}
+
+void seguir(float velocidad, float correccion) {
+    // Calcular la velocidad de cada motor
+    // Aplicar los valores a los servos
+}
+
+void adelante() {
+    Izq.write(180);
+    Der.write(0);
+}
+
+void atras() {
+    Izq.write(0);
+    Der.write(180);
+}
+
+void izquierda() {
+    Izq.write(0);
+    Der.write(0);
+}
+
+void derecha() {
+    Izq.write(180);
+    Der.write(180);
+}
+
+void detener() {
+    Izq.write(90);
+    Der.write(90);
+}
