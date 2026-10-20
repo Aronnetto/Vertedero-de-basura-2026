@@ -30,11 +30,11 @@ const int E1=11;
 
 void setup() {
   
-  Der.attach();
-  Izq.attach();
-  Mano.attach();
-  Brazo.attach();
-  Piston.attach();
+  Der.attach(4);
+  Izq.attach(5);
+  Mano.attach(6);
+  Brazo.attach(7);
+  Piston.attach(8);
   pinMode(sensorPin,INPUT);
   pinMode(T1, OUTPUT);
   pinMode(E1, INPUT);
@@ -53,23 +53,22 @@ while (programa == 1) {
    
    valorSensorPelota = digitalRead(sensorPin);
   
-   medirDistancia();
-
-   if (valorSensorPelota == 0 && distanciaCm <= 10) {
+   
+   if (valorSensorPelota == 0 && medirDistancia() <= 10) {
       
       delay(1000);
       agarrar();
       delay(500);
       Contador ++;
-      
+   }
        else if (valorSensorPelota == 0) {
         
          esquivar();
 
        }
-   }
+   
     
-   if (distanciaCm <=10 && Contador == cantDePelotas){
+   if (medirDistancia() <=10 && Contador == cantDePelotas){
        
       delay(1000); 
       adelante();
@@ -77,21 +76,22 @@ while (programa == 1) {
       izquierda();
       delay(750); // hay que regularlo para que gire a un angulo de 90 grados
        while (analogRead(A4) && analogRead(A5)<=1000) { //cierto valor que no tengo 
-          avanzar();
+          adelante();
        }
       detener();
       delay(1000);
-      avanzar();
+      adelante();
       delay(1000);
       izquierda();
       delay(1500); //delay suficiente para queda a 180 grados de preferencia
       detener();
       tirar();
       delay(1000);
-      avanzar();
+      adelante();
       delay(1000);
       detener();
-      programa = 0; //Queda seco 
+      programa = 0;  
+      break;//Queda seco
     
     }
 
@@ -115,8 +115,7 @@ while (programa == 1) {
 }
 
 void esquivar() {
-    
-    delay(1000);
+    detener();
     atras();
     delay(500);
     derecha();
@@ -129,7 +128,7 @@ void esquivar() {
     delay(1000);
     izquierda();
     delay(750);
-     while (analogRead(A0)<=1000) { //valor que debemos de chquear 
+     while (analogRead(A0)<=800) { //valor que debemos de chquear 
       
       adelante();
 
@@ -141,6 +140,7 @@ void tirar(){
     
     Piston.write(180); //empuja el piston que tira la la bolsa
     delay(2000);
+    Piston.write(90);
 
 }
 void agarrar() {
@@ -149,13 +149,13 @@ void agarrar() {
    delay(1000);
    Brazo.write(180); //sube
    delay(1000); 
-   mano.write(180); //se abre 
+   Mano.write(180); //se abre 
    delay(1000);
    Brazo.write(0); //vuelve
 
 }
 
-void medirDistancia() {
+float medirDistancia() {
     long t;
 
     digitalWrite(T1, HIGH);
@@ -165,13 +165,18 @@ void medirDistancia() {
     t = pulseIn(E1, HIGH, 30000);
 
     if (t > 0) {
-        distanciaCm = t / 59;
+        return t / 59;
+    }
+    else{
+        return 255;
     }
 }
 
 void seguir(float velocidad, float correccion) {
-    // Calcular la velocidad de cada motor
-    // Aplicar los valores a los servos
+    // se le da la velocidad inversa a cada motor y se le 
+    Izq.write(90+(velocidad-correccion));
+    Der.write(90-(velocidad+correccion));
+
 }
 
 void adelante() {
